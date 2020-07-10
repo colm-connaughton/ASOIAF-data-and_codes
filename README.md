@@ -20,7 +20,7 @@ The config files should be fairly self-explanatory and editable by the user.
 
 To run the code, run the following command in the terminal:
 
-    python workflow.py config_default.yaml
+    python pipeline.py config_default.yaml
 
 The config file config_default.yaml runs every step in the calculations by default.
 
