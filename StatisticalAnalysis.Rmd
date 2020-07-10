@@ -1,0 +1,192 @@
+---
+title: "Statistical analysis of inter-event times for ASOIAF"
+author: "Colm Connaughton"
+date: "03/07/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+We will use the poweRlaw library extensively:
+```{r}
+library(poweRlaw)
+```
+Set seed for reproducibility.
+```{r}
+set.seed(1)
+```
+
+Read in the data for the inter-event times for chapters containing significant deaths 
+as measured both in discourse time (chapters) and story time (Westerosi days):
+
+```{r}
+data_folder <- "./data/4-analysis/"
+filename <- paste(data_folder,"death_intervals_by_chapter.txt" ,  sep="")
+data <- read.csv(filename, header=FALSE, sep=",")
+d.discourse = data[['V1']]
+
+filename <- paste(data_folder,"death_intervals_by_date.txt" ,  sep="")
+data <- read.csv(filename, header=FALSE, sep=",")
+d.story = data[['V1']]
+```
+## Geometric (discrete exponential) distribution
+
+First we model the data by a discrete exponential (geometric) distribution and
+estimate the best fit parameter using the method of maximum likelihood:
+
+```{r}
+# Create new distribution objects
+m.exp.discourse = disexp$new(d.discourse)
+m.exp.story = disexp(d.story)
+
+# This is the parameter estimation bit
+est.exp.discourse = estimate_pars(m.exp.discourse)
+m.exp.discourse$setPars(est.exp.discourse$pars)
+
+est.exp.story = estimate_pars(m.exp.story)
+m.exp.story$setPars(est.exp.story$pars)
+
+# Print out the most likely parameters
+cat('Story time: geometric fit q = ', est.exp.story$pars)
+cat('\nDiscourse time: geometric fit q = ', est.exp.discourse$pars)
+```
+
+Here are the plots of the best fit geometric models. We can already see a big difference.
+```{r}
+plot(m.exp.discourse)
+lines(m.exp.discourse, col=2)
+```
+
+```{r}
+plot(m.exp.story)
+lines(m.exp.story, col=2)
+```
+We can estimate uncertainties in the parameter values and obtain goodness of fit p-values 
+by bootstrapping the data. We will define statistical significance to correspond to a 
+p-value threshold of 0.05 in line with a 95% confidence level.
+
+Here we fix xmin=1 since we want to fit a pure geometric distribution rather than
+allow thresholding of the data to get a better fit to the tail of the distribution.
+
+```{r}
+bs.exp.story = bootstrap_p(m.exp.story, no_of_sims=1000, xmin=1)
+bs.exp.discourse = bootstrap_p(m.exp.discourse, no_of_sims=1000, xmin=1)
+```
+```{r}
+plot(bs.exp.discourse)
+```
+
+Print out the best fit parameter value with approximate 95% confidence interval
+```{r}
+paramVal = mean(bs.exp.discourse$bootstraps[,3])
+probs = c(2.5, 97.5)/100
+ci = quantile(bs.exp.discourse$bootstraps[,3], probs)
+pValue = bs.exp.discourse$p
+cat("Discourse time: geometric (exponential) fit:")
+cat("\n            q = ", paramVal, ', [', ci[[1]], ' , ', ci[[2]],']')
+cat("\n            p-value = ", pValue )
+```
+From this p-value, we **fail to reject** the null hypothesis that the inter-event times for
+significant deaths in discourse time follow a geometric distribution.
+
+```{r}
+plot(bs.exp.story)
+```
+```{r}
+paramVal = mean(bs.exp.story$bootstraps[,3])
+probs = c(2.5, 97.5)/100
+ci = quantile(bs.exp.story$bootstraps[,3], probs)
+#stddev = sd(bs.exp.story$bootstraps[,3])
+#conf=2.0*stddev
+pValue = bs.exp.story$p
+#cat("Discourse time: q = ", paramVal, ' +/- ', conf)
+#cat("\nDiscourse time: Goodness of fit p-value = ", pValue )
+cat("Story time: geometric (exponential) fit:")
+cat("\n            q = ", paramVal, ', [', ci[[1]], ' , ', ci[[2]],']')
+cat("\n            p-value = ", pValue )
+```
+
+
+The p-value is not literally zero - just too small to report. From this p-value, we **reject** the null hypothesis 
+that the inter-event times for significant deaths in story time follow a geometric distribution.
+
+## Power law distribution (with lower cut-off)
+
+Based on the analysis above, we conclude that the data on inter-event times for significant deaths in discourse
+time is consistent with a geometric (discrete exponential) distribution but the corresponding data in story time is not. Let us now see if a power law distribution can better describe the story time data.
+
+```{r}
+m.pl.story = displ$new(d.story)
+m.pl.discourse = displ$new(d.discourse)
+
+# Estimate the x_min value for the lower cut-off and alpha value
+xMin.story = estimate_xmin(m.pl.story)
+m.pl.story$setXmin(xMin.story)
+
+xMin.discourse = estimate_xmin(m.pl.discourse)
+m.pl.discourse$setXmin(xMin.discourse)
+
+cat('Story time: estimated xmin = ', xMin.story$xmin)
+cat('\n            estimated alpha = ', xMin.story$pars)
+cat('\nDiscourse time: estimated xmin = ', xMin.discourse$xmin)
+cat('\n            estimated alpha = ', xMin.discourse$pars)
+
+
+```
+
+Make a plot of the fitted model
+```{r}
+plot(m.pl.story)
+lines(m.pl.story, col=2)
+```
+```{r}
+plot(m.pl.discourse)
+lines(m.pl.discourse, col=2)
+```
+
+
+Perform bootstrapping to estimate uncertainties and goodness of fit for story time:
+
+```{r}
+bs.pl.story = bootstrap_p(m.pl.story, no_of_sims=1000)
+plot(bs.pl.story)
+```
+
+```{r}
+paramVal.alpha = mean(bs.pl.story$bootstraps[,3])
+probs = c(2.5, 97.5)/100
+alpha.ci = quantile(bs.pl.story$bootstraps[,3], probs)
+paramVal.x0 = mean(bs.pl.story$bootstraps[,2])
+x0.ci = quantile(bs.pl.story$bootstraps[,2], probs)
+pValue = bs.pl.story$p
+#cat("Story time: alpha = ", paramVal.alpha, ' +/- ', conf.alpha)
+#cat("\n            x0    = ", paramVal.x0, ' +/- ', conf.x0)
+#cat("\nStory time: Goodness of fit p-value = ", pValue )
+cat("Story time: power law fit:")
+cat("\n            alpha = ", paramVal.alpha, ', [', alpha.ci[[1]], ' , ', alpha.ci[[2]],']')
+cat("\n            x0    = ", paramVal.x0, ', [', x0.ci[[1]], ' , ', x0.ci[[2]],']')
+cat("\n            p-value = ", pValue )
+```
+From this p-value, we **fail to reject** the null hypothesis that the inter-event times for significant deaths in story time follow a power law distribution with exponent 2.0  and lower cut-off 3.5.
+```{r}
+bs.pl.discourse = bootstrap_p(m.pl.discourse, no_of_sims=1000)
+plot(bs.pl.discourse)
+```
+Perform bootstrapping to estimate uncertainties and goodness of fit for discourse time:
+
+
+```{r}
+paramVal.alpha = mean(bs.pl.discourse$bootstraps[,3])
+probs = c(2.5, 97.5)/100
+alpha.ci = quantile(bs.pl.discourse$bootstraps[,3], probs)
+paramVal.x0 = mean(bs.pl.discourse$bootstraps[,2])
+x0.ci = quantile(bs.pl.discourse$bootstraps[,2], probs)
+pValue = bs.pl.discourse$p
+cat("Discourse time: power law fit:")
+cat("\n            alpha = ", paramVal.alpha, ', [', alpha.ci[[1]], ' , ', alpha.ci[[2]],']')
+cat("\n            x0    = ", paramVal.x0, ', [', x0.ci[[1]], ' , ', x0.ci[[2]],']')
+cat("\n            p-value = ", pValue )
+```
+From this p-value, we also **fail to reject** the null hypothesis that the inter-event times for significant deaths in discourse time follow a power law distribution with exponent 3.9 and lower cut-off 3.7 but the uncertainties in these values are very large.
+
+

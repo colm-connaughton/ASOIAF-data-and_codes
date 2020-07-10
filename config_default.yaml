@@ -1,0 +1,77 @@
+--- # A Song of Ice and Fire config file
+
+# This file allows control over the data processing pipeline without any need
+# to edit the code.
+
+# config_default.yaml has only some of the figure and table steps in the
+# pipeline switched on and so running "python pipeline.py config_default.yaml"
+# will only re-produce the figures and tables in the 'Network of Thrones' paper
+# from previously analysed data. It will not re-analyse the raw data or
+# produce the supplementary figures and tables.
+#
+# If no config is given to pipeline it will use this config file by default.
+
+# This section specifies the folder structure
+source data folder: './data/1-source/'
+data folder: './data/3-load/'
+analysis folder: './data/4-analysis/'
+plots folder: './data/5-results/'
+tables folder: './data/5-results/'
+
+# This section specifies data file filenames
+timeline data : 'ASOIAF Timeline.xlsx'
+book data:
+  'AGOT' : '01 A Game Of Thrones.xlsx'
+  'ACOK' : '02 A Clash Of Kings.xlsx'
+  'ASOS' : '03 A Storm Of Swords.xlsx'
+  'AFFC' : '04 A Feast  For Crows.xlsm'
+  'ADWD' : '05 A Dance With Dragons.xlsx'
+
+# These sections specify which pipeline stages to run and provides the ability
+# to control some aspects of the calculations
+
+# This stage reads and cleans the raw data and produces standardised data frames
+# that can be read into the analysis.
+extract:
+  run: False
+  books:
+    - 'AGOT'
+    - 'ACOK'
+    - 'ASOS'
+    - 'AFFC'
+    - 'ADWD'
+  steps:
+    chapters: True
+    all characters: True
+    POV characters: True
+    interactions: True
+
+# This stage runs the actual data analyses
+analysis:
+  run: False
+  steps:
+    count character mentions: False
+    network analysis: False
+    interevent times: False
+    characters time evolution: False
+    network time evolution: True
+
+# This stage creates the figures
+plots:
+  run: False
+  steps:
+    deaths vs time: True
+    interevent time pdfs: True
+    chapter counts: True
+    chapter network properties: True
+    important living character network: True
+    important all character network: True
+    degree distribution: True
+
+# This stage creates the tables
+tables:
+  run: True
+  steps:
+    degree and betweenness: True
+    all properties: True
+    POV characters: True
