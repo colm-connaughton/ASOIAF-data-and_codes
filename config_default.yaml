@@ -33,7 +33,7 @@ book data:
 # This stage reads and cleans the raw data and produces standardised data frames
 # that can be read into the analysis.
 extract:
-  run: False
+  run: True
   books:
     - 'AGOT'
     - 'ACOK'
@@ -48,17 +48,17 @@ extract:
 
 # This stage runs the actual data analyses
 analysis:
-  run: False
+  run: True
   steps:
-    count character mentions: False
-    network analysis: False
-    interevent times: False
-    characters time evolution: False
+    count character mentions: True
+    network analysis: True
+    interevent times: True§
+    characters time evolution: True
     network time evolution: True
 
 # This stage creates the figures
 plots:
-  run: False
+  run: True
   steps:
     deaths vs time: True
     interevent time pdfs: True

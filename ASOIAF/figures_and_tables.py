@@ -301,7 +301,7 @@ def interevent_time_PDF_plots(config, geom_fit_params, zeta_fit_params):
     ax1.plot(IETs_chapter, geom_pmf, 'b-', label='Geometric MLE fit')
 
     ax1.legend(loc='upper right')
-    ax1.set_title("(A) Probability Mass Function")
+    ax1.set_title("(A) Probability Distribution Function")
 
     # On ax2 plot ccmf for empirical data and geometric fit
     ax2.set_yscale('log')
@@ -312,7 +312,7 @@ def interevent_time_PDF_plots(config, geom_fit_params, zeta_fit_params):
     ax2.plot(IETs_chapter, geom_ccmf, 'b-', label='Geometric MLE fit')
 
     ax2.legend(loc='upper right')
-    ax2.set_title("(B) Complementary Cumulative Mass Function")
+    ax2.set_title("(B) Complementary Cumulative Distribution Function")
 
     # Save figure to 'plots folder'
     fig.subplots_adjust(hspace=0.4, wspace=0.4, top=0.85)
@@ -336,7 +336,7 @@ def interevent_time_PDF_plots(config, geom_fit_params, zeta_fit_params):
     ax1.plot(dvalue, dpmf, 'ro', label='Empirical data')
     ax1.plot(IETs_date, zeta_pmf, 'b-', label='Zeta MLE fit')
     ax1.legend(loc='upper right')
-    ax1.set_title("(A) Probability Mass Function")
+    ax1.set_title("(A) Probability Distribution Function")
 
     # On ax1 plot pmf for empirical data and zeta fit
     ax2.set_yscale('log')
@@ -346,7 +346,7 @@ def interevent_time_PDF_plots(config, geom_fit_params, zeta_fit_params):
     ax2.plot(dvalue[0:-1], dccmf[0:-1], 'ro', label='Empirical data')
     ax2.plot(IETs_date, zeta_ccmf, 'b-', label='Zeta MLE fit')
     ax2.legend(loc='upper right')
-    ax2.set_title("(B) Complementary Cumulative Mass Function")
+    ax2.set_title("(B) Complementary Cumulative Distribution Function")
 
     # Save figure to 'plots folder'
     fig.subplots_adjust(hspace=0.4, wspace=0.4, top=0.85)
