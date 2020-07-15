@@ -332,39 +332,64 @@ def extract_character_data(config, cumulative_chapter_count):
 
 
 def extract_POV_characters(config):
+    # extract_POV_characters:
+    #
+    # Processes the book data files to create a dataframe that stores information 
+    # on how many chapters are from each characters perspective. So called POV
+    # characters. akes a pipeline config to extract folder sturcture from. 
+    # Returns nothing.
+    
+    # Output a progress marker
     print("  extract_POV_characters()")
+    
+
+
+    ### Find Files
+
+    # Extract folder structure
     source_folder = config['source data folder']
     target_folder = config['data folder']
 
     filenames = config['book data']
     books = config['extract']['books']
 
+
+
+    ### Extract Data
+
+    # Get list of chapter titles
     chapter_headers = []
     for book in books:
         data_file = source_folder+filenames[book]
-        print("    Processing ", data_file)
 
         # Read in the data
         xl = pd.ExcelFile(data_file)
         df = xl.parse()
+        
         # Remove leading and trailing spaces from the 'Character' column
         df['Character'] = df['Character'].str.strip()
-        # Now we can process the rows
+        
+        # Check each row to see if is a new chapter
         for i, row in df.iterrows():
-            # Define a regular expression to match the chapter separator rows in Cathal's spreadsheets
+            # Define a regular expression to match the chapter separator rows in the spreadsheets
             m = re.match(r'(CHAPTER *([0-9]*))|(PROLOGUE)|(EPILOGUE)', row['Character'])
             if m:
                 # This is a separator row. Use it to work out the chapter number and chapter index
                 if not (m.group(0)=='PROLOGUE') or (m.group(0)=='EPILOGUE'):
                     chapter_headers.append(row['Character']+book)
 
+
     # Process the chapter headers to extract the POV characters and count
     # how many times each appears
     POV_first_names = {}
     for item in chapter_headers:
+        # Remove CHAPTER and Number
         item2 = re.sub(r'CHAPTER *([0-9]*)', '', item)
         m = re.search('\(.*?\)', item)
+        
+        # If Anything is Left
         if m:
+            # Remove Roman numerals from chapter titles
             item3 = m.group(0)
             item3 = re.sub(r'((EPILOGUE - )|(-|\(|\))|(".*?"))','', item3)
             item3 = item3.lower()
@@ -383,17 +408,20 @@ def extract_POV_characters(config):
             item3 = re.sub(r'( iii)','',item3)
             item3 = re.sub(r'( ii)','',item3)
             item3 = re.sub(r'( i)','',item3)
-            #item3 = re.sub(r'( I | II | III | IV | V | VI | VII | VIII | IX | X )','',item3)
             item3=item3.strip()
-            #print(item3, item2)
-        if item3 in POV_first_names.keys():
-            POV_first_names[item3] += 1
+        
+            # Increment number of chapters that character has appeared in
+            if item3 in POV_first_names.keys():
+                POV_first_names[item3] += 1
+            else:
+                POV_first_names[item3] = 1
+        
+        # If m == False then an error has occured in extracting the
+        # character name from the chapter title
         else:
-            POV_first_names[item3] = 1
-    print(POV_first_names)
+            print('Error: Failed to parse Chapter title "'+item+'"')
 
-    # Having found the list of POV characters it is easier now to assign their
-    # full names by hand
+    # Name of all POV characters, Found online
     names = {'Daenerys Targaryen' : 'daenerys',
     'Eddard Stark' : 'eddard',
     'Catelyn Stark' : 'catelyn',
@@ -420,22 +448,27 @@ def extract_POV_characters(config):
     'Melisandre' : 'melisandre',
     'Barristan Selmy' : 'barristan'}
 
+    # Convert names of POV characters to their full names
     POV_characters = {}
     for i, (key, value) in enumerate(names.items()):
-        print(key, value)
         try:
             POV_characters[key] = POV_first_names[value]
         except:
             pass
 
+    # Create a DataFrame of the results
     POV_characters = pd.DataFrame.from_dict(POV_characters, orient='index', columns=['chapters'])
-    print(POV_characters)
 
-    # Drop Merret Frey - his chapter is an epilogue and we want to ignore POV
-    # characters in the prologues and epilogues
+    # Drop Merret Frey - his chapter is an epilogue and we choose to ignore POV
+    # characters in the prologues and epilogues. As seems to be conventionally done
+    # by others in discussions of POV characters.
     POV_characters.drop('Merrett Frey', axis=0, inplace=True)
 
-    # Write character data to a pickle
+
+
+
+    ###  Output character data to a pickle
+    
     outputfile = target_folder+'POV_characters.pkl'
     POV_characters.to_pickle(outputfile)
 

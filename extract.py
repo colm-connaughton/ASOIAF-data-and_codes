@@ -40,6 +40,7 @@ def main(config):
         print("  Building timeline index for all chapters.")
         ASOIAF.data.build_timeline_index(config, cumulative_chapter_count)
 
+    # Extract number of chapters from each characters perspective
     if config['extract']['steps']['POV characters']:
         print("  Extracting POV characters from chapter headings.")
         ASOIAF.data.extract_POV_characters(config)
@@ -61,5 +62,6 @@ def main(config):
 if __name__ == "__main__":
     # Read the passed config file
     config = ASOIAF.base.read_config(sys.argv)
+    
     # Call main function
     main(config)

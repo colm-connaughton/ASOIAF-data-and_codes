@@ -77,35 +77,6 @@ def plot_timeseries(fig, ax, df, column_names, labels, styles, xlabel=None,
 #############################################################
 
 #### Plotting of Figures
-
-def degree_plot(config):
-    # Extract folder structure from config
-    source_folder = config['analysis folder']
-    target_folder = config['plots folder']
-    # Read in the degree counts
-    filename = config['analysis folder']+'degree_distribution_all.pkl'
-    [deg_all, cnt_all] = pickle.load(open( filename, "rb" ) )
-    filename = config['analysis folder']+'degree_distribution_alive.pkl'
-    [deg_alive, cnt_alive] = pickle.load(open( filename, "rb" ) )
-
-    # Create plot
-    # Setup figure size and axes
-    filename = target_folder+'degree_distribution.pdf'
-    fig = plt.figure(figsize=(5, 5))
-    ax1 = fig.add_subplot(1,1,1)
-    norm = 1.0
-    p1 = ax1.bar(np.array(deg_all), np.array(cnt_all)*norm, color='blue', alpha=0.6)
-    p2 = ax1.bar(np.array(deg_alive), np.array(cnt_alive)*norm, color='orange', alpha=0.6)
-    ax1.set_yscale('log')
-    ax1.legend((p2[0], p1[0]), ('Survivor network', 'Full network'))
-    ax1.set_xlabel('Degree', fontsize=12)
-    ax1.set_ylabel('Count', fontsize=12)
-    ax1.set_title("Degree distributions")
-
-    # Save figure to 'plots folder'
-    fig.subplots_adjust(hspace=0.4, wspace=0.4, top=0.90, bottom = 0.20)
-    fig.savefig(filename)
-
 def deaths_vs_time_plots(config):
     # deaths_vs_time_plots:
     #
@@ -559,9 +530,9 @@ def chapter_network_properties_plots(config):
 def important_living_character_network_plots(config):
     # important_living_character_network_plots:
     #
-    # Function to produce and store figure 1 of the 'Network of Thrones' Paper.
-    # A graphical depiction of all characters in the network who both appear
-    # in 40 or more chapters and are still alive by the end of ADWD.
+    # Function to produce and store a supplementary figure (S1) to the
+    # 'Network of Thrones' Paper. A graphical depiction of all living 
+    # characters in the network who appear in 40 or more chapters.
     #
     # Takes a pipeline config to extract folder structure from. Function does
     # not return a value.
@@ -737,9 +708,9 @@ def important_living_character_network_plots(config):
 def important_all_character_network_plots(config):
     # important_all_character_network_plots:
     #
-    # Function to produce and store a supplementary figure (S1) to the
-    # 'Network of Thrones' Paper. A graphical depiction of all characters in
-    # the network who appear in 40 or more chapters.
+    # Function to produce and store figure 1 of the 'Network of Thrones' Paper.
+    # A graphical depiction of all characters in the network who appear
+    # in 40 or more chapters.
     #
     # Takes a pipeline config to extract folder structure from. Function does
     # not return a value.
@@ -912,7 +883,67 @@ def important_all_character_network_plots(config):
 
 
 
+
+def degree_plot(config):
+    # degree_plot:
+    #
+    # Function to produce and store a supplementary figure (S2) to the
+    # 'Network of Thrones' Paper. Graphs of the degree distribution of both
+    # the living and all character network.
+    #
+    # Takes a pipeline config to extract folder structure from. Function does
+    # not return a value.
+
+
+
+    # Output pipeline progress indicator
+    print("    degree_plot()")
+
+
+
+    ### Import data to plot
+
+    # Exract folder structure from config
+    source_folder = config['analysis folder']
+    target_folder = config['plots folder']
+    
+    # Read in the degree distributions calculated earlier in pipeline
+    filename = config['analysis folder']+'degree_distribution_all.pkl'
+    [deg_all, cnt_all] = pickle.load(open( filename, "rb" ) )
+    filename = config['analysis folder']+'degree_distribution_alive.pkl'
+    [deg_alive, cnt_alive] = pickle.load(open( filename, "rb" ) )
+
+
+
+    ###  Plotting
+    
+    # Setup figure size and axes
+    filename = target_folder+'degree_distribution.pdf'
+    fig = plt.figure(figsize=(5, 5))
+    ax1 = fig.add_subplot(1,1,1)
+    
+    # Plot degree distributions
+    norm = 1.0
+    p1 = ax1.bar(np.array(deg_all), np.array(cnt_all)*norm, color='blue', alpha=0.6)
+    p2 = ax1.bar(np.array(deg_alive), np.array(cnt_alive)*norm, color='orange', alpha=0.6)
+    
+    # Configure and Label Axes
+    ax1.set_yscale('log')
+    ax1.legend((p2[0], p1[0]), ('Survivor network', 'Full network'))
+    ax1.set_xlabel('Degree', fontsize=12)
+    ax1.set_ylabel('Count', fontsize=12)
+    ax1.set_title("Degree distributions")
+
+    # Save figure to 'plots folder'
+    fig.subplots_adjust(hspace=0.4, wspace=0.4, top=0.90, bottom = 0.20)
+    fig.savefig(filename)
+
+
+
+
+
 #############################################################
+
 
 #### Creation of Tables
 
@@ -1107,14 +1138,12 @@ The three non-POV characters that appear in the top 10 are highlighted in boldfa
 
 
 
-
-
 def POV_characters_table(config):
-    # all_properties_table:
+    # POV_characters_table:
     #
-    # Function to produce and store latex for a supplementary table (S1) to the
-    # 'Network of Thrones' Paper. Table lists the POV characters ranked by the
-    # number of chapters in which they appear
+    # Function to produce and store latex for a supplementary table (S1) 
+    # to the 'Network of Thrones' Paper. Table lists the POV characters 
+    # ranked by the number of chapters in which they appear. 
     #
     # Takes a pipeline config to extract folder structure from. Function does
     # not return a value.
@@ -1124,6 +1153,7 @@ def POV_characters_table(config):
 
     # Output pipeline progress indicator
     print("    POV_character_table()")
+
 
 
     ### Import data to plot
@@ -1142,15 +1172,22 @@ def POV_characters_table(config):
         exit()
 
 
+    # Filter into major and minor POV characters
     major = POV_characters[POV_characters['chapters']>5].copy()
     minor = POV_characters[POV_characters['chapters']<=5].copy()
     major.sort_values(by='chapters', ascending=False, inplace=True)
     minor.sort_values(by='chapters', ascending=False, inplace=True)
-    ### Produce table data
+    
+    
+    
+    ### Table Data
 
-    data = {}
+    data = {} #To store data for each row in table
     counter = 0
+    
+    #Iterate through major characters
     for name1, row in major.iterrows():
+        #Get data for this row in table
         chapters1 = str(row['chapters'])
         if counter < len(minor):
             name2 = minor.iloc[counter].name
@@ -1158,8 +1195,13 @@ def POV_characters_table(config):
         else:
             name2=''
             chapters2 = ''
+            
+        #Store data for current row
         data[counter] = [name1, chapters1, name2, chapters2]
         counter+=1
+
+    
+    ### Output Latex Table
 
     # Initalize file to output Latex too
     filename = target_folder+'POV_character_table.txt'
@@ -1181,7 +1223,7 @@ Name & Chapters & Name & Chapters  \\
         file.write(row[0] +'& '+row[1]
         +'& '+row[2] +'& '+ row[3]+'\\\\'+'\n')
 
-
+  
     file.write(r"""\bottomrule
 \end{tabular}
 """)
@@ -1196,19 +1238,35 @@ Name & Chapters & Name & Chapters  \\
 
     file.close()
 
+
+
+
+
 def properties_double_table(config, properties1, properties2, headings, num):
-    # all_properties_table:
+    # properties_double_table:
     #
-    # Function to produce and store latex for a supplementary table (S1) to the
-    # 'Network of Thrones' Paper. Table lists the top 15 most important
+    # Function to produce and store latex for a supplementary table (S2) to the
+    # 'Network of Thrones' Paper. Table lists the top 'num' most important
     # characters in the all character network and living only character network
-    # by various measures. It also lists any major POV characters who do not
-    # appear in the top 15.
+    # by various measures. Properties to rank characters by for the all-char network
+    # of characters are given in 'properties1', and the properties to rank characters by
+    # in the alive-only network are given in 'properties2'. Headings for the properties' 
+    # columns are given in 'headings'. The table also lists any major POV characters 
+    # who do not appear in the top 'num'.
     #
     # Takes a pipeline config to extract folder structure from. Function does
     # not return a value.
 
-    print("    all_properties_table()")
+
+
+    # Output pipeline progress indicator
+    print("    properties_double_table()")
+
+
+
+    ### Import data to plot
+
+    # Exract folder structure from config
     source_folder = config['data folder']
     target_folder = config['tables folder']
 
@@ -1222,7 +1280,9 @@ def properties_double_table(config, properties1, properties2, headings, num):
         print("    Check config to make sure data has been generated.")
         exit()
 
+
     ### POV Characters, Majors must be included in table
+    
     Major_POVs = ['Tyrion Lannister','Jon Snow',
     'Arya Stark','Daenerys Targaryen','Catelyn Stark','Sansa Stark','Bran Stark',
     'Jaime Lannister','Eddard Stark','Theon Greyjoy','Davos Seaworth','Cersei Lannister',
@@ -1234,8 +1294,11 @@ def properties_double_table(config, properties1, properties2, headings, num):
 
 
     ### Produce Table
+    
     filename = target_folder+'centrality_measures_table.txt'
+    
     #Open and Create Table
+    
     file = open(filename,"w")
     file.write(r"""\begin{table}%[tbhp]
 \centering
@@ -1243,6 +1306,8 @@ def properties_double_table(config, properties1, properties2, headings, num):
 \begin{tabular}{""")
     for item in range(0,len(properties1)):
         file.write(r"""l""")
+    
+    # Write the all character network sub-table
     file.write(r"""}
 All Characters""")
     for item in range(1,len(properties1)):
@@ -1251,9 +1316,11 @@ All Characters""")
 \midrule
 """)
 
-    # Write the sub-table
     write_subtable(file, characters, All_POVs, Major_POVs, headings, properties1, num)
 
+
+
+    # Write the living network sub-table
     file.write(r"""Surviving characters only""")
     for item in range(1,len(properties2)):
         file.write(r"""  &""")
@@ -1261,8 +1328,10 @@ All Characters""")
 \midrule
 """)
 
-    # Write the sub-table
     write_subtable(file, characters, All_POVs, Major_POVs, headings, properties2, num)
+
+
+
 
     ### Cleanup
     file.write(r"""\bottomrule
@@ -1282,7 +1351,20 @@ Non-POV characters are highlighted in boldface and predominant POV characters wh
     file.close()
 
 
+#############################################################
+
+#### Utility tabulating function for keeping to consistent housestyle
+
 def write_subtable(file, characters, All_POVs, Major_POVs, headings, properties, num):
+    # write_subtable:
+    #
+    # Writes to file a sub-table of the top 'num' characters for various network
+    # properties. Column titles are passed in 'headings'. Any major POV characters
+    # outside the top num are also listed. None POV characters appearing in the table
+    # are bolded to highlight them.
+    
+    ### Write out the header of the sub-table
+    
     for i, item in enumerate(headings):
         file.write(' '+item+' ')
         if not i == len(headings)-1:
@@ -1291,25 +1373,38 @@ def write_subtable(file, characters, All_POVs, Major_POVs, headings, properties,
 \midrule
 """)
 
-    # Prepare the data
+
+
+    ### Data preperation
+    
+    #Data Structures
     characters_by = {}
     data_by = {}
-    #All Character Sub-Table
+
+    #Loop through each property to be tabulated
     for item in properties:
+        # Get characters sorted by property
         characters_by[item] =  characters.sort_values(item,ascending = False)
         data_by[item] = []
+        
+        # Select which we are to tabulate
         for char_num in range(characters_by[item].shape[0]):
             character_name = characters_by[item].iloc[char_num].get('name')
             property_value = characters_by[item].iloc[char_num].get(item)
+            
             # Check for nan: skip this iteration if found
             if property_value != property_value:
                 continue
+                
+            # Format the value into string    
             if (item == 'degree_all') or (item == 'degree_living'):
                 property_value = str(int(round(property_value)))
             else:
                 property_value = "{:.4f}".format(property_value)
 
+            # Determine if character to be included in table
             if ((char_num < num) or (character_name in Major_POVs)):
+                #Bolden if not POV character
                 if (character_name in All_POVs):
                     data_by[item].append(str(char_num+1)+'. ' + characters_by[item].iloc[char_num].get('name') +
                         ' (' + property_value + ') ')
@@ -1320,6 +1415,7 @@ def write_subtable(file, characters, All_POVs, Major_POVs, headings, properties,
 
     # Work out the table height
     table_height = max([len(data_by[key]) for key in data_by])
+    
     # Fill in blank entries where needed
     for key in data_by:
         n = len(data_by[key])
@@ -1330,7 +1426,7 @@ def write_subtable(file, characters, All_POVs, Major_POVs, headings, properties,
         for item in properties:
             data_by[item][row] = data_by[item][row].replace("Brienne Tarth","Brienne of Tarth")
 
-    # Write the table
+    ### Write the table to file
     for row in range(table_height):
         for i, item in enumerate(properties):
             file.write(' '+ data_by[item][row] + ' ')

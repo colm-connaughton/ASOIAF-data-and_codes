@@ -39,7 +39,7 @@ def count_character_mentions(config):
 
 
     # Output pipeline progress indicator
-    print("  count_character_mentions()")
+    print("    count_character_mentions()")
 
 
     ### Import data to analyse
@@ -117,7 +117,7 @@ def calculate_network_properties(config):
 
 
     # Output pipeline progress indicator
-    print("  calculate_network_properties()")
+    print("    calculate_network_properties()")
 
 
     ### Import data to analyse
@@ -211,7 +211,7 @@ def extract_interevent_times(config):
 
 
     # Output pipeline progress indicator
-    print("  calculate_interevent_times()")
+    print("    calculate_interevent_times()")
 
 
     ### Import data to analyse
@@ -320,7 +320,7 @@ def chapter_by_chapter_characters(config):
 
 
     # Output pipeline progress indicator
-    print("  chapter_by_chapter_characters()")
+    print("    chapter_by_chapter_characters()")
 
 
     ### Import data to analyse
@@ -450,7 +450,8 @@ def chapter_by_chapter_network_properties(config):
     # Calculates global network properties at the end of each chapter for the
     # all character and living character networks. Stores this information in
     # a pickled data frame. Information intended for later use to see if
-    # social network is real-world like.
+    # social network is real-world like. Also calculates finally
+    # degree distribution of both Networks. 
     #
     # Takes a pipeline config to extract folder structure from. Function does
     # not return a value.
@@ -458,7 +459,7 @@ def chapter_by_chapter_network_properties(config):
 
 
     # Output pipeline progress indicator
-    print("  chapter_by_chapter_network_properties()")
+    print("    chapter_by_chapter_network_properties()")
 
 
     ### Import data to analyse
@@ -573,16 +574,25 @@ def chapter_by_chapter_network_properties(config):
     filename = target_folder+'network_properties_by_chapter.pkl'
     df.to_pickle(filename)
 
-    # Calculate the degree distributions for the two networks and save them to
-    # a file.
+    
+    
+    ### Final Network Degree Distributions
+
+    # Calculate the degree distributions for the all character networks 
     degree_sequence = sorted([d for n, d in G.degree()], reverse=True)  # degree sequence
     degreeCount = collections.Counter(degree_sequence)
     deg, cnt = zip(*degreeCount.items())
+    
+    # Save to File
     filename = target_folder+'degree_distribution_all.pkl'
     pickle.dump( [deg,cnt], open( filename, "wb" ) )
 
+
+    # Calculate the degree distributions for the living character networks 
     degree_sequence = sorted([d for n, d in G_alive.degree()], reverse=True)  # degree sequence
     degreeCount = collections.Counter(degree_sequence)
     deg, cnt = zip(*degreeCount.items())
+    
+    # Save to File
     filename = target_folder+'degree_distribution_alive.pkl'
     pickle.dump( [deg,cnt], open( filename, "wb" ) )

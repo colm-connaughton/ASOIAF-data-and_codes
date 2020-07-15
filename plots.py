@@ -54,18 +54,18 @@ def main(config):
         ASOIAF.figures_and_tables.chapter_network_properties_plots(config)
 
     # Draw the network of living characters who appear in more than
-    # 40 chapters (Figure 1)
+    # 40 chapters (Supplementary Figure)
     if config['plots']['steps']['important living character network']:
         print("  Plotting network of most important living characters")
         ASOIAF.figures_and_tables.important_living_character_network_plots(config)
 
     # Draw the network of all characters who appear in more than
-    # 40 chapters (Supplementary Figure)
+    # 40 chapters (Figure 1)
     if config['plots']['steps']['important all character network']:
         print("  Plotting network of most important characters alive or dead")
         ASOIAF.figures_and_tables.important_all_character_network_plots(config)
 
-    # Plot degree distributions
+    # Plot degree distributions of the Networks (Supplementary Figure)
     if config['plots']['steps']['degree distribution']:
         print("  Plotting network degree distributions")
         ASOIAF.figures_and_tables.degree_plot(config)
